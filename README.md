@@ -55,9 +55,14 @@ The project runs entirely through Docker Compose — no local Python or Node ins
 **Prerequisites:** Docker Desktop, or Docker Engine plus the Compose plugin (the `docker compose` v2 CLI used below).
  
 From the project root:
- 
+
+ Frist time running:
 ```bash
-docker compose up --build --remove-orphans
+docker compose up --build
+```
+Re-running the project:
+```bash
+docker compose up
 ```
  
 This builds and starts three containers:
@@ -93,7 +98,7 @@ Frontend dependency changes don't need an explicit rebuild — `npm install` run
  
 ## Demo Logins
  
-Password for all accounts: `password`
+Password for all accounts: `password123`
  
 | Email | Role |
 |---|---|
