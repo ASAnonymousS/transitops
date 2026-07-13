@@ -1,0 +1,25 @@
+# Stage 1: Build the React Frontend
+FROM node:18-alpine AS frontend-builder
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
+# Stage 2: Build the FastAPI Backend
+FROM python:3.11-slim
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y gcc default-libmysqlclient-dev && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY backend/ ./backend/
+# Ensure your .env is excluded from the build copy if it contains hardcoded credentials
+
+COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
+
+EXPOSE 8000
+
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

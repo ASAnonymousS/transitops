@@ -1,0 +1,37 @@
+name: Build and Deploy Application
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Build the Docker image completely agnostic of the database secret
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false # Set to true if you are pushing to Docker Hub or GHCR
+          tags: transitops-app:latest
+
+      # Run the container securely by pulling the secret from GitHub at runtime
+      - name: Test / Run Container
+        env:
+          # Pulls the secret securely from GitHub Actions repository secrets
+          LIVE_DB_URI: ${{ secrets.PRODUCTION_DB_URI }}
+        run: |
+          docker run -d \
+            -p 8000:8000 \
+            -e DATABASE_URL="$LIVE_DB_URI" \
+            --name transitops-container \
+            transitops-app:latest
