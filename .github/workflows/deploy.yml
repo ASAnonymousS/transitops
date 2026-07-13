@@ -22,6 +22,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false # Set to true if you are pushing to Docker Hub or GHCR
+          load: true
           tags: transitops-app:latest
 
       # Run the container securely by pulling the secret from GitHub at runtime
