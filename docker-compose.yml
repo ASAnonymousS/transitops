@@ -1,0 +1,52 @@
+services:
+  db:
+    image: mariadb:latest
+    container_name: transitops_database
+    environment:
+      MYSQL_DATABASE: transitops
+      MYSQL_USER: mock
+      MYSQL_PASSWORD: mock
+      MYSQL_ROOT_PASSWORD: secure_root_password_here
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/database.sql:/docker-entrypoint-initdb.d/database.sql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    # Changed from 'build' to a direct Node image to provide npm natively
+    image: node:18-alpine
+    container_name: transitops_frontend
+    ports:
+      - "5173:5173"
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: transitops_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      - DATABASE_URL=mysql+pymysql://mock:mock@db:3306/transitops
+      - SECRET_KEY=your_super_secret_key_random_string_here
+      - ALGORITHM=HS256
+    command: uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      db:
+        condition: service_healthy
+      frontend:
+        condition: service_started
