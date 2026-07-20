@@ -148,6 +148,18 @@ The Analytics page supports a client-side CSV export of the per-vehicle cost bre
 
 Dark mode is the default appearance rather than a toggleable option. PDF export, automated email reminders for expiring licenses, and document management were left out of this build to keep scope within the hackathon time window; CSV export and the core RBAC, validation, and state-machine rules were prioritized as the mandatory business rules.
 
+### Status State Machine
+- Dispatching a trip sets the vehicle and driver to "On Trip".
+- Completing a trip sets them back to "Available", records the final odometer reading, and logs a fuel entry if fuel was entered.
+- Cancelling a dispatched trip restores the vehicle and driver to "Available"; cancelling a draft trip has no effect on either, since nothing was reserved.
+### Maintenance and Vehicle Status Coupling
+Creating an active service record immediately sets the vehicle to "In Shop", removing it from the trip dispatch pool. Closing the service record restores "Available", unless the vehicle has separately been marked "Retired".
+ 
+### Auto-Computed Cost and ROI
+Per-vehicle fuel, maintenance, and toll/other totals are derived directly from the underlying log tables rather than stored redundantly. Fleet utilization, fuel efficiency, and return on investment are computed the same way and reflected on the Analytics and Fuel pages.
+
+
+
 ## Contributing
 
 - [Manisha Mohanty](https://github.com/TheMM13)
